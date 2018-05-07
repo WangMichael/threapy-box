@@ -1,0 +1,30 @@
+{
+  "name": "ecs",
+  "version": "0.0.1",
+  "description": "threpay",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "d:/Websites/threapy/"
+  },
+  "author": "Michael",
+  "license": "ISC",
+  "devDependencies": {
+    "autoprefixer": "^8.4.1",
+    "cssnano": "*",
+    "grunt": "^1.0.1",
+    "grunt-contrib-copy": "*",
+    "grunt-contrib-requirejs": "*",
+    "grunt-contrib-watch": "*",
+    "grunt-curl": "^2.4.1",
+    "grunt-data-uri": "*",
+    "grunt-phplint": "*",
+    "grunt-postcss": "^0.9.0",
+    "grunt-sass": "*",
+    "grunt-shell": "*",
+    "grunt-zip": "*"
+  }
+}

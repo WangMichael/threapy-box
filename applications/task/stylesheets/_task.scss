@@ -1,0 +1,85 @@
+.task{
+
+    color: #FFFFFF;
+    &__list{
+
+        &-item{
+            & + & {
+                margin-top: 20px;
+            }
+
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+
+
+
+            &--plus{
+
+
+                & > * {
+                    display: none;
+                }
+
+                &::before{
+                    content:'';
+                    width: 30px;
+                    height: 30px;
+                    cursor: pointer;
+                    margin-left: -58%;
+                    background: url('../assets/Plus_button_small.png');
+                    background-size: contain;
+                    background-repeat: no-repeat;
+                    background-position: center;
+                }
+            }
+
+            & > input[type='text']{
+                background-color: transparent;
+                padding: 20px 10px 5px 10px;
+                border-width: 0 0 2px 0;
+                border-style: solid;
+                border-color: #FFFFFF;
+                font-size: 1.3em;
+                color: #FFFFFF;
+                width: 60%;
+            }
+
+            & > label{
+
+                height: 20px;
+                width: 20px;
+                border-color: yellow;
+                border-style: solid;
+                border-width: 3px;
+                position:relative;
+                border-radius: 5px;
+
+                & > input[type='checkbox']{
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                    opacity: 0;
+                    &:checked ~ span{
+                        display: block;
+                    }
+                }
+
+
+                & > span{
+                    display:none;
+                    position: absolute;
+                    left:6px;
+                    top:3px;
+                    width:5px;
+                    height:10px;
+                    border: solid white;
+                    border-width: 0 3px 3px 0;
+                    transform: rotate(45deg);
+                }
+            }
+        }
+    }
+}

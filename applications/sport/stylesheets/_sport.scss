@@ -1,0 +1,33 @@
+.sport{
+
+  color: #FFFFFF;
+
+  &__input{
+    width: 300px;
+    margin: 0  auto;
+    padding: 10px;
+    border-width: 0 0 1px 0;
+    display: block;
+    background: transparent;
+    color: #FFFFFF;
+    font-size: 20px;
+  }
+
+  &__list{
+    max-height: 0;
+    visibility: hidden;
+    opacity: 0;
+    overflow: hidden;
+
+    & > li{
+      padding: 10px;
+    }
+
+    &--display{
+      max-height: 1000px;
+      visibility: visible;
+      opacity: 1;
+      overflow: visible;
+    }
+  }
+}

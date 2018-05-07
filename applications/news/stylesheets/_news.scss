@@ -1,0 +1,28 @@
+.news{
+  color: #FFFFFF;
+  &--heading{
+  }
+
+  &__block{
+
+    margin: 0 auto;
+
+    &-image{
+      display: block;
+      margin: 0 auto;
+      max-width: 678px;
+      max-height: 415px;
+    }
+
+    &-title{
+      text-align: center;
+
+    }
+
+    &-description{
+      text-align: center;
+
+    }
+
+  }
+}

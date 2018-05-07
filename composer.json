@@ -1,0 +1,27 @@
+{
+  "autoload": {
+    "psr-4": {
+      "framework\\database\\": "framework/database/src/",
+      "framework\\container\\": "framework/container/src/",
+      "framework\\aggregateConfig\\": "framework/aggregateConfig/src/",
+      "framework\\template\\": "framework/template/src/",
+      "framework\\image\\": "framework/image/src/",
+
+
+
+      "application\\dashboard\\": "applications/dashboard/src/",
+      "application\\login\\": "applications/login/src/",
+      "application\\weather\\": "applications/weather/src/",
+      "application\\sport\\": "applications/sport/src/",
+      "application\\clothes\\": "applications/clothes/src/",
+      "application\\task\\": "applications/task/src/",
+      "application\\photo\\": "applications/photo/src/",
+      "application\\news\\": "applications/news/src/",
+      "application\\mvc\\": "applications/mvc/"
+    }
+  },
+
+  "scripts": {
+    "serve": "php -S 0.0.0.0:8080 -t public/"
+  }
+}
