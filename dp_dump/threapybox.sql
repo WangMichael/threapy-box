@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: May 07, 2018 at 03:54 PM
+-- Generation Time: May 07, 2018 at 04:02 PM
 -- Server version: 5.7.20
 -- PHP Version: 7.2.0
 
@@ -45,7 +45,8 @@ INSERT INTO `photo` (`photoID`, `photoPath`, `photoUser`) VALUES
 (16, 'f7c0900e331708f9.png', 1),
 (19, '9bf8ff645b13aac3.png', 1),
 (20, '25163d887a4abfbd.jpg', 1),
-(21, '494d6b6407263ae3.jpg', 1);
+(21, '494d6b6407263ae3.jpg', 1),
+(22, 'ef963a54a635247b.jpg', 6);
 
 -- --------------------------------------------------------
 
@@ -72,7 +73,8 @@ INSERT INTO `task` (`taskID`, `taskDescription`, `taskStatus`, `taskUser`) VALUE
 (6, 'Task 4', 1, 1),
 (7, 'Task 5', 1, 1),
 (8, 'Task 6', 1, 1),
-(9, 'Task 7', 1, 1);
+(9, 'Task 7', 1, 1),
+(10, 'Task 1', 1, 6);
 
 -- --------------------------------------------------------
 
@@ -88,16 +90,6 @@ CREATE TABLE `user` (
   `userPassword` varchar(256) NOT NULL,
   `userImage` varchar(256) NOT NULL DEFAULT ''''''
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `user`
---
-
-INSERT INTO `user` (`userID`, `userName`, `userEmail`, `userPassword`, `userImage`) VALUES
-(1, 'michaelmichael', 'hw390@exeter.ac.uk', '$2y$10$VsIXb4WyNGAY0s.tkR3GseDhwzHz7gZzzLfa1ukxDsILPKxkU75B6', '\'\''),
-(2, 'quytemichael', 'huiyue.wang@outlook.com', '$2y$10$JJalMDXHEOzrAZoSL5VV6OjUg.Vg3sL3rSCHmEoe59uVHPk90f7NG', '\'\''),
-(3, 'michaelquyteadfsd', 'huiyue.wang@icloud.com', '$2y$10$IWIuL5wIP0hZhoxPzvs.7e.GSk2ifuFseAPP.bqmPiGnPGxFbPMQm', '\'\''),
-(5, 'fsdfsdfdsdsf', 'hmichad@yahoo.com', '$2y$10$lszACTTC0OXVWG63zl8in.aaSFDiBS1IqDHBGKQdYfS23AOWMIqGO', 'f54a6d45f627d7f7.jpg');
 
 --
 -- Indexes for dumped tables
@@ -131,19 +123,19 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `photo`
 --
 ALTER TABLE `photo`
-  MODIFY `photoID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `photoID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `task`
 --
 ALTER TABLE `task`
-  MODIFY `taskID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `taskID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `userID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `userID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
