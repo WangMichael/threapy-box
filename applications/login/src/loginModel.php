@@ -92,7 +92,8 @@ class loginModel implements loginModelInterface
             return;
         }
 
-        session_start();
+        if(!session_id())
+            session_start();
         session_regenerate_id();
         $_SESSION['username']       = $data['username'];
         $_SESSION['email']          = $data['email'];
