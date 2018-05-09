@@ -39,87 +39,7 @@ class dashboardView implements dashboardViewInterface
     }
 
 
-    private function drawContent(string $path) : string
-    {
-        $login  = $this->model->getContainer()->get('login');
 
-        // log out
-        if($path == '/log_out/'){
-            $login->destroy();
-            header('Location: /', true,301);
-            exit();
-        }
-
-        // authenticate and redirect the page
-        if(!$login->isAuthorised()){
-
-
-            if($path === '/'){
-                $login->checkLogin();
-                return $login->drawLogin();
-            }
-
-            if($path === '/register/'){
-                $login->checkRegister();
-                return $login->drawRegister();
-            };
-
-            $path = '/'.'?'.urlencode('target='.$path);
-            header('Location: '.$path.'/', true,301);
-            exit();
-        }
-
-        // direct to the dashboard if the page is sign in or sign up
-        if(in_array($path, array('/', '/register/'))){
-            header('Location: /dashboard', true,301);
-            exit();
-        }
-
-        // rendering photos
-        if($path === '/photo/'){
-            $photos = $this->model->getContainer()->get('photo');
-            $photos->processImages();
-            return $photos->drawPage();
-        }
-
-        // rendering task
-        if($path === '/task/'){
-            $task  = $this->model->getContainer()->get('task');
-            $task->processTask();
-            return $task->drawPage();
-        }
-
-
-        // rendering sports
-        if($path === '/sport/'){
-            $sports  = $this->model->getContainer()->get('sport');
-            return $sports->drawPage();
-        }
-
-        // rendering the news
-        if($path === '/news/'){
-            $news   = $this->model->getContainer()->get('news');
-            return $news->drawPage();
-        }
-
-        if($path === '/dashboard/'){
-
-            $thumbnails             = [];
-            $thumbnails['weather']  = $this->model->getContainer()->get('weather')->drawThumbnail();
-            $thumbnails['news']     = $this->model->getContainer()->get('news')->drawThumbnail();
-            $thumbnails['sport']    = $this->model->getContainer()->get('sport')->drawThumbnail();
-            $thumbnails['photo']    = $this->model->getContainer()->get('photo')->drawThumbnail();
-            $thumbnails['clothes']  = $this->model->getContainer()->get('clothes')->drawThumbnail();
-            $thumbnails['task']     = $this->model->getContainer()->get('task')->drawThumbnail();
-
-            $template = $this->model->getContainer()->get('template');
-
-            return $template->render(dirname(__DIR__).'/templates/thumbnail.php', array('thumbnails' => $thumbnails));
-        }
-
-        return '';
-
-    }
 
 
     public function drawPage()
@@ -149,7 +69,7 @@ class dashboardView implements dashboardViewInterface
             exit($html);
         }
 
-        $content['content'] = $this->drawContent($path);
+        $content['content'] = $this->model->route($path);
 
         // insert message after the first H1 tag
         $msg = $template->drawErrorMsg();

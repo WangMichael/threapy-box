@@ -17,4 +17,6 @@ interface dashboardModelInterface extends modelInterface
     public function getJavaScript() : array;
 
     public function getScriptName(string $requestUri);
+
+    public function route(string $path) : string;
 }

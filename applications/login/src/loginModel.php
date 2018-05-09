@@ -97,7 +97,7 @@ class loginModel implements loginModelInterface
         session_regenerate_id();
         $_SESSION['username']       = $data['username'];
         $_SESSION['email']          = $data['email'];
-        $_SESSION['userID']       = $data['userID'];
+        $_SESSION['userID']         = $data['userID'];
         $_SESSION['fingerprint']    = $this->getFingerPrint($data['username'], $data['email']);
 
 
