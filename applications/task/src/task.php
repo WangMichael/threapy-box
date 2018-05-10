@@ -4,17 +4,27 @@ declare(strict_types=1);
 
 namespace application\task;
 
-use framework\container\containerInterface;
+use application\login\loginControllerInterface;
+use framework\database\databaseInterface;
+use framework\template\templateInterface;
 
 class task implements taskInterface
 {
 
+    private $template;
 
-    private $container;
+    private $login;
 
-    public function __construct(containerInterface $container)
+    private $config;
+
+    private $database;
+
+    public function __construct(templateInterface $template, databaseInterface $database, loginControllerInterface $login, array $config)
     {
-        $this->container = $container;
+        $this->template = $template;
+        $this->login    = $login;
+        $this->config   = $config;
+        $this->database = $database;
     }
 
     public function processTask()
@@ -30,59 +40,56 @@ class task implements taskInterface
 
     public function insertTaskData(array $data) : void
     {
-        $userID = $this->container->get('login')->getUserID();
-        if(!$userID){
+
+        if(!$userID = $this->login->getUserID()){
             trigger_error(sprintf('The user does not exist in %s', __METHOD__), E_USER_WARNING);
             return;
         }
 
         $query      = 'INSERT INTO `task`(`taskDescription`, `taskStatus`, `taskUser`) VALUES (?,?,?)';
-        $database   = $this->container->get('database');
-        $database->startTransaction();
+        $this->database->startTransaction();
         foreach($data AS $task){
             $data   = array($task['description'], $task['status'], $userID);
             $type   = array('s', 'i', 'i');
-            if(false === $id = $database->query($query, $data, $type)){
-                trigger_error($database->getDbError(), E_USER_WARNING);
-                $database->rollback();
+            if(false === $id = $this->database->query($query, $data, $type)){
+                trigger_error($this->database->getDbError(), E_USER_WARNING);
+                $this->database->rollback();
                 return;
             }
 
         }
-        $database->commit();
+        $this->database->commit();
 
     }
 
 
     public function updateTaskData(array $data) : void
     {
-        $userID = $this->container->get('login')->getUserID();
-        if(!$userID){
+
+        if(!$userID = $this->login->getUserID()){
             trigger_error(sprintf('The user does not exist in %s', __METHOD__), E_USER_WARNING);
             return;
         }
 
         $query = 'UPDATE `task` SET `taskDescription`= ?,`taskStatus`= ? WHERE `taskID` = ? AND `taskUser` = ?';
-        $database   = $this->container->get('database');
-        $database->startTransaction();
+        $this->database->startTransaction();
         foreach($data AS $task){
             $data   = array($task['description'], (int)$task['status'], (int)$task['id'], $userID);
             $type   = array('s', 'i', 'i', 'i');
-            if(false === $id = $database->query($query, $data, $type)){
-                trigger_error($database->getDbError(), E_USER_WARNING);
-                $database->rollback();
+            if(false === $id = $this->database->query($query, $data, $type)){
+                trigger_error($this->database->getDbError(), E_USER_WARNING);
+                $this->database->rollback();
                 return;
             }
 
         }
-        $database->commit();
+        $this->database->commit();
     }
 
     public function getTaskData(int $limit = null): array
     {
 
-        $userID = $this->container->get('login')->getUserID();
-        if(!$userID){
+        if(!$userID = $this->login->getUserID()){
             trigger_error(sprintf('The user does not exist in %s', __METHOD__), E_USER_WARNING);
             return array();
         }
@@ -92,6 +99,7 @@ class task implements taskInterface
             'description' => 'taskDescription',
             'status'      => 'taskStatus'
         );
+
         $table  = 'task';
         $params = Array(
             'where' => Array('`taskUser` = ?')
@@ -100,12 +108,10 @@ class task implements taskInterface
             $params['show'] = $limit;
         $data   = array($userID);
         $type   = array('i');
-
-        $database   = $this->container->get('database');
-        $query      = $database->getSelectSql($fields, $table, $params);
-        if(false === $data = $database->query($query, $data, $type)){
-            if($database->getDbError())
-                trigger_error($database->getDbError(), E_USER_WARNING);
+        $query      = $this->database->getSelectSql($fields, $table, $params);
+        if(false === $data = $this->database->query($query, $data, $type)){
+            if($this->database->getDbError())
+                trigger_error($this->database->getDbError(), E_USER_WARNING);
             return array();
         }
 
@@ -115,15 +121,13 @@ class task implements taskInterface
     public function drawThumbnail() : string
     {
         $data       = $this->getTaskData(3);
-        $template   = $this->container->get('template');
-        return $template->render(dirname(__DIR__) . '/template/thumbnail.php', array('data' => $data));
+        return $this->template->render(dirname(__DIR__) . '/template/thumbnail.php', array('data' => $data));
     }
 
 
     public function drawPage(): string
     {
         $data       = $this->getTaskData();
-        $template   = $this->container->get('template');
-        return $template->render(dirname(__DIR__) . '/template/task.php', array('data' => $data));
+        return $this->template->render(dirname(__DIR__) . '/template/task.php', array('data' => $data));
     }
 }

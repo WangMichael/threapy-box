@@ -15,4 +15,6 @@ interface imageInterface
 
     public function getMiMEType(string $filePath) : String;
 
+    public function resize_image($file, $w, $h, $crop=FALSE) : bool;
+
 }

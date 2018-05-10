@@ -4,30 +4,30 @@ declare(strict_types=1);
 
 namespace application\login;
 
-use framework\container\containerInterface;
+use framework\database\databaseInterface;
+use framework\image\imageInterface;
 
 class loginModel implements loginModelInterface
 {
 
-    private $container;
-
 
     private $target;
 
-
     private $populate = [];
 
+    private $database;
 
-    public function __construct(containerInterface $container)
+    private $config;
+
+    private $imageHandler;
+
+
+    public function __construct(databaseInterface $database, imageInterface $imageHandler, array $config)
     {
-        $this->container    = $container;
+        $this->database     = $database;
+        $this->imageHandler = $imageHandler;
+        $this->config       = $config;
     }
-
-    public function getContainer(): containerInterface
-    {
-        return $this->container;
-    }
-
 
     public function checkLogin() : void
     {
@@ -76,11 +76,10 @@ class loginModel implements loginModelInterface
         $data   = array($_POST['username']);
         $types  = array('s');
 
-        $database   = $this->getContainer()->get('database');
 
-        $query      = $database->getSelectSql($fields, $table, $params);
+        $query      = $this->database->getSelectSql($fields, $table, $params);
 
-        if(false === $data = $database->query($query, $data, $types)){
+        if(false === $data = $this->database->query($query, $data, $types)){
             // user does not exist in the database
             trigger_error('The username/password is not correct', E_USER_WARNING);
             return;
@@ -195,27 +194,22 @@ class loginModel implements loginModelInterface
             return;
         }
 
-
-
         // check the profile image
         if(empty($_POST['profile']['name'])){
             trigger_error('Please select a profile image', E_USER_WARNING);
             return;
         }
-        $aggregateConfig = $this->container->get('aggregateConfig');
-        $httpDocs = $aggregateConfig->getConfig('httpDocs');
-        $profileFolder  = $aggregateConfig->getConfig('register', 'profile');
-        $profileFolder = $httpDocs.$profileFolder;
+
+        $profileFolder = $this->config['httpDocs'].$this->config['register']['profile'];
         if(!file_exists($profileFolder))
             mkdir($profileFolder);
-        $imageHandler   = $this->container->get('image');
-        $MiMEType   = $imageHandler->getMiMEType($_POST['profile']['tmp_name']);
-        if(!$imageHandler->isImage($MiMEType)){
+        $MiMEType   = $this->imageHandler->getMiMEType($_POST['profile']['tmp_name']);
+        if(!$this->imageHandler->isImage($MiMEType)){
             trigger_error('The file is not an image', E_USER_WARNING);
             return;
         }
-        $extension      = $imageHandler->getExtension($MiMEType);
-        $profileName    = $imageHandler->getRandomFileName($extension);
+        $extension      = $this->imageHandler->getExtension($MiMEType);
+        $profileName    = $this->imageHandler->getRandomFileName($extension);
         $source         = $_POST['profile']['tmp_name'];
         $destination    = $profileFolder.$profileName;
 
@@ -236,9 +230,8 @@ class loginModel implements loginModelInterface
         $query      = "INSERT INTO `user` (`userName`, `userEmail`, `userPassword`, `userImage`) VALUES (?, ?, ?, ?)";
         $data       = Array($username, $email, password_hash($password, PASSWORD_DEFAULT), $profileName);
         $types      = Array('s', 's', 's', 's');
-        $database   = $this->getContainer()->get('database');
-        if(false === $userID = $database->query($query, $data, $types)){
-            trigger_error($database->getDbError(), E_USER_WARNING);
+        if(false === $userID = $this->database->query($query, $data, $types)){
+            trigger_error($this->database->getDbError(), E_USER_WARNING);
             return;
         }
 
@@ -308,5 +301,11 @@ class loginModel implements loginModelInterface
             session_start();
 
         return $_SESSION['userID'] ?? 0;
+    }
+
+
+    public function getConfig() : array
+    {
+        return $this->config;
     }
 }

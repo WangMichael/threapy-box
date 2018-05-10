@@ -11,6 +11,8 @@ class clothesFactory implements factoryInterface
 {
     public function __invoke(ContainerInterface $container, string $requestName)
     {
-        return new clothes($container);
+
+        $config = $container->get('aggregateConfig')->getConfig('clothes');
+        return new clothes($container->get('template'), $container->get('login'), $config);
     }
 }

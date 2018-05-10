@@ -4,38 +4,40 @@ declare(strict_types=1);
 
 namespace application\weather;
 
-use framework\container\containerInterface;
+use framework\template\templateInterface;
 
 class weather implements weatherInterface
 {
+    private $template;
 
-    private $container;
+    private $config;
 
-    public function __construct(containerInterface $container)
+
+    public function __construct(templateInterface $template, array $config)
     {
-        $this->container = $container;
+        $this->template     = $template;
+        $this->config       = $config;
     }
 
     public function getWeatherData(): array
     {
-        $weatherConfig = $this->container->get('aggregateConfig')->getConfig('weather');
 
-        if(!isset($weatherConfig['apiUrl'])){
+        if(!isset($this->config['apiUrl'])){
             trigger_error('The weather API does not exist', E_USER_WARNING);
             return array();
         }
 
-        if(!isset($weatherConfig['city'])){
+        if(!isset($this->config['city'])){
             trigger_error('The weather City does not exist', E_USER_WARNING);
             return array();
         }
 
-        if(!isset($weatherConfig['token'])){
+        if(!isset($this->config['token'])){
             trigger_error('The weather API token does not exist', E_USER_WARNING);
             return array();
         }
 
-        $url = $weatherConfig['apiUrl'].'?'.'q='.$weatherConfig['city'].'&appid='.$weatherConfig['token'];
+        $url = $this->config['apiUrl'].'?'.'q='.$this->config['city'].'&appid='.$this->config['token'];
         $json = file_get_contents($url);
         if(!$json){
             trigger_error('The weather connection has failed', E_USER_WARNING);
@@ -57,22 +59,18 @@ class weather implements weatherInterface
     {
         $data = $this->getWeatherData();
 
-        $weatherConfig = $this->container->get('aggregateConfig')->getConfig('weather');
-
         $image = strtolower($data['main']);
         if(strpos($image, 'cloud') !== false)
-            $image  = $weatherConfig['cloud'];
+            $image  = $this->config['cloud'];
         elseif(strpos($image, 'sun') !== false)
-            $image  = $weatherConfig['sun'];
+            $image  = $this->config['sun'];
         else
-            $image  = $weatherConfig['rain'];
+            $image  = $this->config['rain'];
 
 
         $content    = Array('image' => $image, 'city' => $data['city'], 'degree' => $data['temp']);
 
-        $template   = $this->container->get('template');
-
-        return $template->render(dirname(__DIR__).'/template/weather.php', $content);
+        return $this->template->render(dirname(__DIR__).'/template/weather.php', $content);
 
     }
 

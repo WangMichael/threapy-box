@@ -32,4 +32,7 @@ interface loginModelInterface extends modelInterface
 
     public function getUserName() : String;
 
+
+    public function getConfig() : array;
+
 }

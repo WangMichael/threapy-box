@@ -12,6 +12,11 @@ class photoFactory implements factoryInterface
     public function __invoke(ContainerInterface $container, string $requestName)
     {
 
-        return new photo($container);
+        $aggregateConfig    = $container->get('aggregateConfig');
+        $config             = [];
+        $config['httpDocs'] = $aggregateConfig->getConfig('httpDocs');
+        $config['photo']    = $aggregateConfig->getConfig('photo');
+        return new photo($container->get('template'), $container->get('database'),
+                        $container->get('image'), $container->get('login'), $config);
     }
 }

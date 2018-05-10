@@ -11,6 +11,7 @@ class weatherFactory implements factoryInterface
 {
     public function __invoke(ContainerInterface $container, string $requestName)
     {
-        return new weather($container);
+        $config = $container->get('aggregateConfig')->getConfig('weather');
+        return new weather($container->get('template'), $config);
     }
 }

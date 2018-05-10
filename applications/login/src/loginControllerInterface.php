@@ -23,4 +23,6 @@ interface loginControllerInterface extends controllerInterface
 
     public function getUserName() : string;
 
+    public function getUserID() : int;
+
 }

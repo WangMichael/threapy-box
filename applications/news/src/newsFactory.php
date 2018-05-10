@@ -12,6 +12,7 @@ class newsFactory implements factoryInterface
     public function __invoke(ContainerInterface $container, string $requestName)
     {
 
-        return new news($container);
+        $config = $container->get('aggregateConfig')->getConfig('news');
+        return new news($container->get('template'), $config);
     }
 }

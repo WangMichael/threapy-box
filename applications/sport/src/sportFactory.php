@@ -12,6 +12,7 @@ class sportFactory implements factoryInterface
     public function __invoke(ContainerInterface $container, string $requestName)
     {
 
-        return new sport($container);
+        $config = $container->get('aggregateConfig')->getConfig('sport');
+        return new sport($container->get('template'), $config);
     }
 }

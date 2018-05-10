@@ -4,22 +4,25 @@ declare(strict_types=1);
 
 namespace application\sport;
 
-
-use framework\container\containerInterface;
+use framework\template\templateInterface;
 
 class sport implements sportInterface
 {
 
-    private $container;
+    private $template;
 
-    public function __construct(containerInterface $container)
+    private $config;
+
+
+    public function __construct(templateInterface $template, array $config)
     {
-        $this->container = $container;
+        $this->template     = $template;
+        $this->config       = $config;
     }
 
-    public function getSportData(): array
+    private function getSportData(): array
     {
-        $csv  = $this->container->get('aggregateConfig')->getConfig('sport', 'apiUrl');
+        $csv  = $this->config['apiUrl'];
 
         if (false === $handle = fopen($csv, 'r')){
             trigger_error('The CSV file cannot be opened', E_USER_WARNING);
@@ -67,8 +70,7 @@ class sport implements sportInterface
     {
 
         $data = $this->getSportData();
-        $template   = $this->container->get('template');
-        return $template->render(dirname(__DIR__) . '/template/sport.php', array('teams' => $data));
+        return $this->template->render(dirname(__DIR__) . '/template/sport.php', array('teams' => $data));
 
     }
 
@@ -77,9 +79,7 @@ class sport implements sportInterface
 
         $data       = $this->getSportData();
         $team       = key($data);
-
-        $template   = $this->container->get('template');
-        return $template->render(dirname(__DIR__) . '/template/thumbnail.php', array('team' => $team));
+        return $this->template->render(dirname(__DIR__) . '/template/thumbnail.php', array('team' => $team));
 
     }
 }

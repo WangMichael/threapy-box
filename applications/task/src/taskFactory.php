@@ -11,7 +11,6 @@ class taskFactory implements factoryInterface
 {
     public function __invoke(ContainerInterface $container, string $requestName)
     {
-
-        return new task($container);
+        return new task($container->get('template'), $container->get('database'), $container->get('login'), array());
     }
 }

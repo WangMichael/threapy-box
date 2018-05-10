@@ -4,34 +4,40 @@ declare(strict_types=1);
 
 namespace application\clothes;
 
-use framework\container\containerInterface;
+use application\login\loginControllerInterface;
+use framework\template\templateInterface;
 
 class clothes implements clothesInterface
 {
 
-    private $container;
+    private $config;
 
-    public function __construct(containerInterface $container)
+    private $login;
+
+    private $template;
+
+    public function __construct(templateInterface $template, loginControllerInterface $login, array $config)
     {
-        $this->container = $container;
+
+        $this->template = $template;
+        $this->login    = $login;
+        $this->config   = $config;
     }
 
     public function getClothesData(): array
     {
-        $clothesConfig = $this->container->get('aggregateConfig')->getConfig('clothes');
 
-        if(!isset($clothesConfig['apiUrl'])){
+        if(!isset($this->config['apiUrl'])){
             trigger_error('The clothes API does not exist', E_USER_WARNING);
             return array();
         }
 
-        $username     = $this->container->get('login')->getUserName();
-        if(empty($username)){
+        if(!$username = $this->login->getUserName()){
             trigger_error('The username does not exist', E_USER_WARNING);
             return array();
         }
 
-        $url = $clothesConfig['apiUrl'].'?'.'username='.$username;
+        $url = $this->config['apiUrl'].'?'.'username='.$username;
         $json = file_get_contents($url);
         if(!$json){
             trigger_error('The clothes connection has failed', E_USER_WARNING);
@@ -57,8 +63,7 @@ class clothes implements clothesInterface
     {
         $data       = $this->getclothesData();
         $content    = Array('data' => $data);
-        $template   = $this->container->get('template');
-        return $template->render(dirname(__DIR__).'/template/clothes.php', $content);
+        return $this->template->render(dirname(__DIR__).'/template/clothes.php', $content);
     }
 
 

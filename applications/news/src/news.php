@@ -4,24 +4,26 @@ declare(strict_types=1);
 
 namespace application\news;
 
-use framework\container\container;
+use framework\template\templateInterface;
 
 class news implements newsInterface
 {
 
 
-    private $container;
+    private $template;
 
-    public function __construct(container $container)
+    private $config;
+
+    public function __construct(templateInterface $template, array  $config)
     {
-        $this->container = $container;
+        $this->template = $template;
+        $this->config   = $config;
     }
 
     public function getNewsData(): array
     {
-        $url  = $this->container->get('aggregateConfig')->getConfig('news', 'rssUrl');
 
-
+        $url        = $this->config['rssUrl'];
         $xml        = simplexml_load_file($url);
         $thumbnails = $xml->xpath ('channel/item/media:thumbnail');
         $thumbnail  = json_decode(json_encode($thumbnails[0]), true);
@@ -39,8 +41,7 @@ class news implements newsInterface
     {
         $data = $this->getNewsData();
 
-        $template   = $this->container->get('template');
-        return $template->render(dirname(__DIR__) . '/template/thumbnail.php', array('news'=>$data));
+        return $this-> template->render(dirname(__DIR__) . '/template/thumbnail.php', array('news'=>$data));
     }
 
 
@@ -52,8 +53,7 @@ class news implements newsInterface
                         'width' => $data['width'], 'height' => $data['height'],
                         'description' => $data['description']);
 
-        $template   = $this->container->get('template');
-        return $template->render(dirname(__DIR__) . '/template/news.php', $content);
+        return $this->template->render(dirname(__DIR__) . '/template/news.php', $content);
 
     }
 }

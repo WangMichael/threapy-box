@@ -4,19 +4,34 @@ declare(strict_types=1);
 
 namespace application\photo;
 
-use framework\container\containerInterface;
-use framework\image\image;
+use application\login\loginControllerInterface;
+use framework\database\databaseInterface;
 use framework\image\imageInterface;
+use framework\template\templateInterface;
 
 class photo implements photoInterface
 {
 
+    private $template;
 
-    private $container;
+    private $database;
 
-    public function __construct(containerInterface $container)
+    private $config;
+
+    private $imageHandler;
+
+    private $login;
+
+
+    public function __construct(templateInterface $template, databaseInterface $database,
+                                imageInterface $imageHandler, loginControllerInterface $login,
+                                array $config)
     {
-        $this->container = $container;
+        $this->template         = $template;
+        $this->database         = $database;
+        $this->imageHandler     = $imageHandler;
+        $this->login            = $login;
+        $this->config           = $config;
     }
 
     public function processImages(): void
@@ -28,49 +43,45 @@ class photo implements photoInterface
         $files          = $files['photo'];
         $sources        = [];
         $targets        = [];
-        $imageHandler   = $this->container->get('image');
         foreach($files AS $file){
 
             $filePath   = $file['tmp_name'];
-            $MiMEType   = $imageHandler->getMiMEType($filePath);
-            if(!$imageHandler->isImage($MiMEType)){
+            $MiMEType   = $this->imageHandler->getMiMEType($filePath);
+            if(!$this->imageHandler->isImage($MiMEType)){
                 trigger_error(sprintf('%s is not an image', $file['name']), E_USER_WARNING);
                 return;
             }
 
-            if(!$imageHandler->resize_image($filePath, 280, 280, true)){
+            if(!$this->imageHandler->resize_image($filePath, 280, 280, true)){
                 trigger_error(sprintf('%s is not resizable to (%d, %d)', $file['name'], 280, 280), E_USER_WARNING);
                 return;
             }
-            $extension      = $imageHandler->getExtension($MiMEType);
-            $profileName    = $imageHandler->getRandomFileName($extension);
+            $extension      = $this->imageHandler->getExtension($MiMEType);
+            $profileName    = $this->imageHandler->getRandomFileName($extension);
             $sources[]      = $filePath;
             $targets[]      = $profileName;
         }
 
-        $login    = $this->container->get('login');
-        $userID   = $login->getUserID();
-        if(!$userID){
+        if(!$userID = $this->login->getUserID()){
             trigger_error(sprint('Could not get user ID in the method %s', __METHOD__), E_USER_WARNING);
             return;
         }
 
-        $database   = $this->container->get('database');
+
         $query      = 'INSERT INTO `photo`(`photoPath`, `photoUser`) VALUES (?, ?)';
         $type       = array('s', 'i');
-        $database->startTransaction();
+        $this->database->startTransaction();
         foreach($targets AS $target){
             $data = array($target, $userID);
-            if(false === $id = $database->query($query, $data, $type)){
-                trigger_error($database->getDbError(), E_USER_WARNING);
-                $database->rollback();
+            if(false === $id = $this->database->query($query, $data, $type)){
+                trigger_error($this->database->getDbError(), E_USER_WARNING);
+                $this->database->rollback();
                 return;
             }
         }
 
-        $aggregateConfig    = $this->container->get('aggregateConfig');
-        $httpDocs           = $aggregateConfig->getConfig('httpDocs');
-        $photoFolder        = $aggregateConfig->getConfig('photo', 'photoAssets');
+        $httpDocs           = $this->config['httpDocs'];
+        $photoFolder        = $this->config['photo']['photoAssets'];
         $photoFolder        = $httpDocs.$photoFolder;
         if(!file_exists($photoFolder))
             mkdir($photoFolder);
@@ -79,12 +90,12 @@ class photo implements photoInterface
         foreach($sources AS $source => $target){
             if(!move_uploaded_file($source, $photoFolder.$target)){
                 trigger_error('Could not upload file', E_USER_WARNING);
-                $database->rollback();
+                $this->database->rollback();
                 return;
             }
         }
         trigger_error('The files have been uploaded successfully', E_USER_NOTICE);
-        $database->commit();
+        $this->database->commit();
     }
 
 
@@ -118,9 +129,8 @@ class photo implements photoInterface
     public function getPhotoData(int $limit): array
     {
 
-        $userID         = $this->container->get('login')->getUserID();
-        $photoFolder    = $this->container->get('aggregateConfig')->getConfig('photo', 'photoAssets');
-        if(empty($userID)){
+        $photoFolder    = $this->config['photo']['photoAssets'];
+        if(!$userID = $this->login->getUserID()){
             trigger_error('The username does not exist', E_USER_WARNING);
             return array();
         }
@@ -136,16 +146,12 @@ class photo implements photoInterface
         $data   = Array($photoFolder, $userID);
         $types  = Array('s','i');
 
+        $query      = $this->database->getSelectSql($fields, $table, $params);
 
-
-        $database   = $this->container->get('database');
-
-        $query      = $database->getSelectSql($fields, $table, $params);
-
-        if(false === $data = $database->query($query, $data, $types)){
+        if(false === $data = $this->database->query($query, $data, $types)){
             // user does not exist in the database
-            if($database->getDbError())
-                trigger_error($database->getDbError(), E_USER_WARNING);
+            if($this->database->getDbError())
+                trigger_error($this->database->getDbError(), E_USER_WARNING);
             return array();
         }
         return $data;
@@ -157,9 +163,8 @@ class photo implements photoInterface
         $query      = "INSERT INTO `photo` (`photoPath`, `photoUser`) VALUES (?, ?)";
         $data       = Array($photoPath, $userID);
         $types      = Array('s', 'i');
-        $database   = $this->getContainer()->get('database');
-        if(false === $userID = $database->query($query, $data, $types)){
-            trigger_error($database->getDbError(), E_USER_WARNING);
+        if(false === $id = $this->database->query($query, $data, $types)){
+            trigger_error($this->database->getDbError(), E_USER_WARNING);
             return false;
         }
 
@@ -170,11 +175,10 @@ class photo implements photoInterface
     {
         $data       = $this->getphotoData(4);
         $data       = array_merge($data, array_fill(0, abs(count($data)-4), []));
-        $url        = $this->container->get('aggregateConfig')->getConfig('photo', 'url');
+        $url        = $this->config['photo']['url'];
 
         $content    = Array('data' => $data, 'url' => $url);
-        $template   = $this->container->get('template');
-        return $template->render(dirname(__DIR__) . '/template/thumbnail.php', $content);
+        return $this->template->render(dirname(__DIR__) . '/template/thumbnail.php', $content);
     }
 
 
@@ -182,10 +186,8 @@ class photo implements photoInterface
     {
         $data       = $this->getphotoData(6);
         $data       = array_merge($data, array_fill(0, abs(count($data)-6), []));
-        $url        = $this->container->get('aggregateConfig')->getConfig('photo', 'url');
-
+        $url        = $this->config['photo']['url'];
         $content    = Array('data' => $data, 'url' => $url);
-        $template   = $this->container->get('template');
-        return $template->render(dirname(__DIR__) . '/template/photo.php', $content);
+        return $this->template->render(dirname(__DIR__) . '/template/photo.php', $content);
     }
 }
